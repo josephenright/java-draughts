@@ -6,8 +6,9 @@ import java.awt.*;
 
 public class Piece extends JButton {
 
+    enum Status { NONE, WHITE, BLACK };
+
     private boolean white;
-    enum Status { NONE, WHITE, BLACK}
     private Status status;
     private Position position;
 
@@ -41,7 +42,8 @@ public class Piece extends JButton {
         else {
             setStatus(Status.BLACK);
             setEnabled(true);
-        }/*
+        }
+        /*
         Status s = (icon.getDescription() == "images/white.png")? Status.WHITE : Status.BLACK;
         setStatus(s);
         setEnabled(true);*/

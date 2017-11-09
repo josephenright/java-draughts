@@ -14,16 +14,24 @@ public class Board extends JFrame {
 
     public Board() {
         super("Draughts");
+        //setSize(1055, 915);
         setSize(800, 800);
         setResizable(false);
 
         //setLayout(new FlowLayout());
         //Container gameBoard = new Container();
+        //gameBoard.setLayout(new GridLayout(8, 8));
         setLayout(new GridLayout(8, 8));
-        //add(gameBoard);
 
         whitePiece = new ImageIcon("images/white.png");
         blackPiece = new ImageIcon("images/red.png");
+
+        JMenuBar menu = new JMenuBar();
+        JMenuItem jmi = new JMenuItem("Game");
+        //jmi.
+        menu.add(jmi);
+        //add(menu);
+        //add(gameBoard);
 
         for (int x = 0; x <8; x++) {
             List<Piece> list = new ArrayList<>();
@@ -38,15 +46,15 @@ public class Board extends JFrame {
                         jb = new Piece(false, x, y);
 
                     //jb.addActionListener(new PieceListener());
-
-                    list.add(jb);
                 }
                 else
                     jb = new Piece();
 
+                //gameBoard.add(jb);
                 add(jb);
 
 
+                list.add(jb);
             }
             spaces.add(list);
         }
