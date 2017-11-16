@@ -43,10 +43,8 @@ public class Piece extends JButton {
             setStatus(Status.BLACK);
             setEnabled(true);
         }
-        /*
-        Status s = (icon.getDescription() == "images/white.png")? Status.WHITE : Status.BLACK;
-        setStatus(s);
-        setEnabled(true);*/
+        //enable for testing
+        //setEnabled(true);
     }
 
 
@@ -75,5 +73,39 @@ public class Piece extends JButton {
         return p.getStatus();
     }
 
+    public void setHighlight(boolean highlight) {
+        if (highlight)
+            setBackground(Color.GREEN);
+        else if (white)
+            setBackground(Color.WHITE);
+        else
+            setBackground(Color.BLACK);
+    }
+    public void setSelected(boolean selected) {
+        if (selected)
+            setBackground(Color.CYAN);
+        else if (white)
+            setBackground(Color.WHITE);
+        else
+            setBackground(Color.BLACK);
+    }
 
+    public static void movePiece(Piece piece, Piece target){
+        if (piece.getStatus() == Piece.Status.NONE)
+            return;
+        //Icons
+        target.setIcon(piece.getIcon());
+        piece.setIcon(null);
+        //Status
+        target.setStatus(piece.getStatus());
+        piece.setStatus(Status.NONE);
+
+
+        piece.setEnabled(false);
+    }
+    public static void pieceJumped(Piece p) {
+        p.setIcon(null);
+        p.setStatus(Status.NONE);
+        p.setEnabled(false);
+    }
 }

@@ -11,6 +11,7 @@ public class Board extends JFrame {
 
     private ImageIcon whitePiece;
     private ImageIcon blackPiece;
+    private JMenuItem turn;
 
     public Board() {
         super("Draughts");
@@ -26,10 +27,7 @@ public class Board extends JFrame {
         whitePiece = new ImageIcon("images/white.png");
         blackPiece = new ImageIcon("images/red.png");
 
-        JMenuBar menu = new JMenuBar();
-        JMenuItem jmi = new JMenuItem("Game");
-        //jmi.
-        menu.add(jmi);
+        createMenu();
         //add(menu);
         //add(gameBoard);
 
@@ -61,13 +59,48 @@ public class Board extends JFrame {
 
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setVisible(true);
+        //setVisible(true);
+    }
+
+    private void createMenu() {
+        //JMenuListener menuListener = new JMenuListener();
+        JMenuBar bar = new JMenuBar();
+        setJMenuBar(bar);
+
+        JMenu menu = new JMenu("Game");
+        JMenuItem item = new JMenuItem("Save");
+        menu.add(item);
+
+        item = new JMenuItem("Load");
+        menu.add(item);
+
+        item = new JMenuItem("Exit");
+        //item.addActionListener(menuListener);
+        menu.add(item);
+
+        bar.add(menu);
+        turn = new JMenuItem("Turn");
+        bar.add(turn);
+        turn.setEnabled(false);
+        setTurn(true);
     }
 
     public List<List<Piece>> getPieces() {
         return spaces;
     }
 
+    public void setTurn(boolean p1turn) {
+        String t = (p1turn)? "Red's Turn" : "White's Turn";
+        turn.setText(t);
+    }
 
+    /*
+    class JMenuListener implements ActionListener{
 
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (e.getActionCommand().equals("Exit"))
+                System.Exit(0);
+        }
+    }*/
 }
