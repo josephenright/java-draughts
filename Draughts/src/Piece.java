@@ -1,58 +1,60 @@
-//Piece.java
-//A piece represents a square of the board
-
 import javax.swing.*;
 import java.awt.*;
 
 public class Piece extends JButton {
 
-    enum Status { NONE, WHITE, BLACK };
+    static ImageIcon whiteIcon;
+    static ImageIcon blackIcon;
+    static int whitePieces = 0;
+    static int blackPieces = 0;
 
-    private boolean white;
+    enum Status {NONE, WHITE, BLACK};
+
     private Status status;
     private Position position;
 
     public Piece() {
-        this(true, 0, 0);
+        //this();
     }
 
     public Piece(boolean white, int x, int y) {
-        super();
+        this(true, x, y, Status.NONE);
+    }
 
-        setWhite(white);
-        if (white) {
+    public Piece(boolean white, int x, int y, Status status) {
+        super();
+        if (whiteIcon == null)
+            setWhiteIcon();
+        if (blackIcon == null)
+            setBlackIcon();
+
+        if (white)
             setBackground(Color.WHITE);
-        }
         else
             setBackground(Color.BLACK);
-
-        setEnabled(false);
-        setStatus(Status.NONE);
+        updatePieceCount(white, true);
         setPosition(x, y);
 
-        //setSize(50, 50);
-        //jb.setLocation(x * 60, y * 60);
+        if (status == Status.WHITE)
+            setIcon(whiteIcon);
+        else if (status == Status.BLACK)
+            setIcon(blackIcon);
+        setStatus(status);
+
     }
 
-    public Piece(boolean white, int x, int y, ImageIcon icon) {
-        this(white, x, y);
-        setIcon(icon);
-        if (icon.getDescription() == "images/white.png")
-            setStatus(Status.WHITE);
-        else {
-            setStatus(Status.BLACK);
-            setEnabled(true);
-        }
-        //enable for testing
-        //setEnabled(true);
+    public static ImageIcon getWhiteIcon() {
+        return whiteIcon;
+    }
+    public static void setWhiteIcon(ImageIcon whiteIcon) {
+        Piece.whiteIcon = whiteIcon;
     }
 
-
-    private void setWhite(boolean white) {
-        this.white = white;
+    public static ImageIcon getBlackIcon() {
+        return blackIcon;
     }
-    public boolean isWhite() {
-        return white;
+    public static void setBlackIcon(ImageIcon blackIcon) {
+        Piece.blackIcon = blackIcon;
     }
 
     public Status getStatus() {
@@ -62,50 +64,37 @@ public class Piece extends JButton {
         this.status = status;
     }
 
-    public void setPosition(int x, int y) {
-        this.position = new Position(x, y);
-    }
     public Position getPosition() {
         return position;
     }
-
-    public static Status getStatus(Piece p) {
-        return p.getStatus();
+    public void setPosition(Position position) {
+        this.position = position;
+    }
+    public void setPosition(int x, int y) {
+        this.position = new Position(x, y);
     }
 
-    public void setHighlight(boolean highlight) {
-        if (highlight)
-            setBackground(Color.GREEN);
-        else if (white)
-            setBackground(Color.WHITE);
+    @Override
+    public String toString() {
+        return "Piece{" +
+                "status=" + status +
+                ", position=" + position.toString() +
+                '}';
+    }
+
+
+    private void setWhiteIcon() {
+        whiteIcon = new ImageIcon("images/white.png");
+    }
+    private void setBlackIcon() {
+        blackIcon = new ImageIcon("images/red.png");
+    }
+
+    private void updatePieceCount(boolean white, boolean add) {
+        int change = (add)? 1 : -1;
+        if (white)
+            whitePieces += change;
         else
-            setBackground(Color.BLACK);
-    }
-    public void setSelected(boolean selected) {
-        if (selected)
-            setBackground(Color.CYAN);
-        else if (white)
-            setBackground(Color.WHITE);
-        else
-            setBackground(Color.BLACK);
-    }
-
-    public static void movePiece(Piece piece, Piece target){
-        if (piece.getStatus() == Piece.Status.NONE)
-            return;
-        //Icons
-        target.setIcon(piece.getIcon());
-        piece.setIcon(null);
-        //Status
-        target.setStatus(piece.getStatus());
-        piece.setStatus(Status.NONE);
-
-
-        piece.setEnabled(false);
-    }
-    public static void pieceJumped(Piece p) {
-        p.setIcon(null);
-        p.setStatus(Status.NONE);
-        p.setEnabled(false);
+            blackPieces += change;
     }
 }
