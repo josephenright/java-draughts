@@ -35,6 +35,14 @@ public class GameManager {
         selectedPiece = p;
         p.setBackground(Color.CYAN);
     }
+    private static void deselectPiece() {
+        if (selectedPiece != null) {
+            selectedPiece.setBackground(Color.BLACK);
+            if (selectedPiece.getStatus() == Piece.Status.NONE)
+                selectedPiece.setEnabled(false);
+            selectedPiece = null;
+        }
+    }
     private static void getMoveToPieces(Piece p) {
         int x = p.getPosition().getX();
         int y = p.getPosition().getY();
@@ -46,16 +54,18 @@ public class GameManager {
             //if x >= 0 for move
             if (x >= 0) {
                 //only go right when on leftmost black tiles
-                if (x % 2 == 0 && y == 0) {
-
+                if (x % 2 == 1 && y == 0) {
+                    //canMoveTo.add();
+                    isPieceFree(x - 1, y + 1);
                 }
                 //only go left when on rightmost black tiles
-                else if (x % 2 == 1 && y == 7) {
-
+                else if (x % 2 == 0 && y == 7) {
+                    isPieceFree(x - 1, y - 1);
                 }
                 //otherwise go both left and right
                 else {
-
+                    isPieceFree(x - 1, y - 1);
+                    isPieceFree(x - 1, y + 1);
                 }
             }
             //if (x > 0 for jump)
@@ -66,27 +76,91 @@ public class GameManager {
             //if x <= 7 for move
             if (x <= 7) {
                 //only go right when on leftmost black tiles
-                if (x % 2 == 0 && y == 0) {
-
+                if (x % 2 == 1 && y == 0) {
+                    //canMoveTo.add();
+                    isPieceFree(x + 1, y + 1);
                 }
                 //only go left when on rightmost black tiles
-                else if (x % 2 == 1 && y == 7) {
-
+                else if (x % 2 == 0 && y == 7) {
+                    isPieceFree(x + 1, y - 1);
                 }
                 //otherwise go both left and right
                 else {
-
+                    isPieceFree(x + 1, y - 1);
+                    isPieceFree(x + 1, y + 1);
                 }
             }
             //if (x < 7 for jump)
         }
     }
 
+    private static void isPieceFree(int x, int y) {
+        Piece p = board.getPieces().get(x).get(y);
+        if (p.getStatus() == Piece.Status.NONE) {
+            canMoveTo.add(p);
+            p.setEnabled(true);
+            p.setBackground(Color.GREEN);
+        }
+        else {
+            //get piece 'behind' p
+            //if this piece is free
+        }
+    }
+
+    private static void deselectCanMoveTo() {
+        for (Piece p : canMoveTo) {
+            if (p.getStatus() == Piece.Status.NONE)
+                p.setEnabled(false);
+            p.setBackground(Color.BLACK);
+        }
+        canMoveTo.clear();
+    }
+
+
+
     static class PieceListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            selectPiece((Piece)e.getSource());
+            Piece p = (Piece)e.getSource();
+            if (p.getStatus() != Piece.Status.NONE) {
+                deselectCanMoveTo();
+                selectPiece(p);
+                getMoveToPieces(p);
+            }
+            else if (canMoveTo.contains(p)){
+                Piece.movePiece(selectedPiece, p);
+                deselectCanMoveTo();
+                deselectPiece();
+            }
+        }
+    }
+
+    private static class Jump {
+        private Piece jumpablePiece;
+        private Piece destination;
+
+        public Jump() {
+
+        }
+
+        public Jump(Piece jumpablePiece, Piece destination) {
+            setJumpablePiece(jumpablePiece);
+            setDestination(destination);
+        }
+
+        public Piece getJumpablePiece() {
+            return jumpablePiece;
+        }
+        public void setJumpablePiece(Piece jumpablePiece) {
+            this.jumpablePiece = jumpablePiece;
+        }
+
+        public Piece getDestination() {
+            return destination;
+        }
+        public void setDestination(Piece destination) {
+            this.destination = destination;
         }
     }
 }

@@ -125,6 +125,15 @@ public class Piece extends JButton {
         Piece.blackIcon = blackIcon;
     }
 
-
+    public static void movePiece(Piece piece, Piece destination) {
+        if (destination.getStatus() == Piece.Status.NONE) {
+            //piece.setBackground(Color.BLACK);
+            destination.setIcon(piece.getIcon());
+            piece.setIcon(null);
+            destination.setStatus(piece.getStatus());
+            piece.setStatus(Status.NONE);
+            piece.setEnabled(false);
+        }
+    }
     //End of static methods
 }
