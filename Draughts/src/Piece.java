@@ -10,15 +10,17 @@ public class Piece extends JButton {
 
     enum Status {NONE, WHITE, BLACK};
 
+    private boolean white;
     private Status status;
     private Position position;
+    private boolean king;
 
     public Piece() {
         //this();
     }
 
     public Piece(boolean white, int x, int y) {
-        this(true, x, y, Status.NONE);
+        this(white, x, y, Status.NONE);
     }
 
     public Piece(boolean white, int x, int y, Status status) {
@@ -32,29 +34,20 @@ public class Piece extends JButton {
             setBackground(Color.WHITE);
         else
             setBackground(Color.BLACK);
+        setWhite(white);
         updatePieceCount(white, true);
         setPosition(x, y);
 
-        if (status == Status.WHITE)
-            setIcon(whiteIcon);
-        else if (status == Status.BLACK)
-            setIcon(blackIcon);
         setStatus(status);
-
+        king = false;
     }
 
-    public static ImageIcon getWhiteIcon() {
-        return whiteIcon;
+    //Start of instance methods
+    public void setWhite(boolean white) {
+        this.white = white;
     }
-    public static void setWhiteIcon(ImageIcon whiteIcon) {
-        Piece.whiteIcon = whiteIcon;
-    }
-
-    public static ImageIcon getBlackIcon() {
-        return blackIcon;
-    }
-    public static void setBlackIcon(ImageIcon blackIcon) {
-        Piece.blackIcon = blackIcon;
+    public boolean isWhite() {
+        return white;
     }
 
     public Status getStatus() {
@@ -62,6 +55,17 @@ public class Piece extends JButton {
     }
     public void setStatus(Status status) {
         this.status = status;
+
+        if (status == Status.WHITE) {
+            setIcon(whiteIcon);
+            setEnabled(true);
+        }
+        else if (status == Status.BLACK) {
+            setIcon(blackIcon);
+            setEnabled(true);
+        }
+        else
+            setEnabled(false);
     }
 
     public Position getPosition() {
@@ -74,6 +78,13 @@ public class Piece extends JButton {
         this.position = new Position(x, y);
     }
 
+    public boolean isKing() {
+        return king;
+    }
+    public void kingMe() {
+        this.king = true;
+    }
+
     @Override
     public String toString() {
         return "Piece{" +
@@ -81,7 +92,6 @@ public class Piece extends JButton {
                 ", position=" + position.toString() +
                 '}';
     }
-
 
     private void setWhiteIcon() {
         whiteIcon = new ImageIcon("images/white.png");
@@ -97,4 +107,24 @@ public class Piece extends JButton {
         else
             blackPieces += change;
     }
+    //End of instance methods
+
+
+    //Start of static methods
+    public static ImageIcon getWhiteIcon() {
+        return whiteIcon;
+    }
+    public static void setWhiteIcon(ImageIcon whiteIcon) {
+        Piece.whiteIcon = whiteIcon;
+    }
+
+    public static ImageIcon getBlackIcon() {
+        return blackIcon;
+    }
+    public static void setBlackIcon(ImageIcon blackIcon) {
+        Piece.blackIcon = blackIcon;
+    }
+
+
+    //End of static methods
 }
