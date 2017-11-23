@@ -47,6 +47,9 @@ public class GameManager {
     }
 
     private static void getMoveToPieces(Piece p) {
+        getMoveToPieces(p, selectedPiece);
+    }
+    private static void getMoveToPieces(Piece p, Piece selectedPiece) {
         int x = p.getPosition().getX();
         int y = p.getPosition().getY();
 
@@ -58,26 +61,18 @@ public class GameManager {
             if (x > 0) {
                 //only go right when on leftmost black tiles
                 if (x % 2 == 1 && y == 0) {
-                    //canMoveTo.add();
-                    if (isPieceFree(x - 1, y + 1) == MoveType.MOVE)
-                        highLightMove(x - 1, y + 1);
+                    //canMoveTo.add
+                    highlightFreePiece(x - 1, y - 1, selectedPiece);
                 }
                 //only go left when on rightmost black tiles
                 else if (x % 2 == 0 && y == 7) {
-                    if (isPieceFree(x - 1, y - 1) == MoveType.MOVE)
-                        highLightMove(x - 1, y - 1);
+                    highlightFreePiece(x - 1, y - 1, selectedPiece);
                 }
                 //otherwise go both left and right
                 else {
-                    if (isPieceFree(x - 1, y - 1) == MoveType.MOVE)
-                        highLightMove(x - 1, y - 1);
-                    if (isPieceFree(x - 1, y + 1) == MoveType.MOVE)
-                        highLightMove(x - 1, y + 1);
+                    highlightFreePiece(x - 1, y - 1, selectedPiece);
+                    highlightFreePiece(x - 1, y + 1, selectedPiece);
                 }
-            }
-            //if (x > 0 for jump)
-            if (x > 0) {
-
             }
         }
         if (p.getStatus() == Piece.Status.WHITE || p.isKing()){
@@ -88,27 +83,27 @@ public class GameManager {
                 //only go right when on leftmost black tiles
                 if (x % 2 == 1 && y == 0) {
                     //canMoveTo.add();
-                    if (isPieceFree(x + 1, y + 1) == MoveType.MOVE)
-                        highLightMove(x + 1, y + 1);
+                    highlightFreePiece(x + 1, y + 1, selectedPiece);
                 }
                 //only go left when on rightmost black tiles
                 else if (x % 2 == 0 && y == 7) {
-                    if (isPieceFree(x + 1, y - 1) == MoveType.MOVE)
-                        highLightMove(x + 1, y - 1);
+                    highlightFreePiece(x + 1, y - 1, selectedPiece);
                 }
                 //otherwise go both left and right
                 else {
-                    if (isPieceFree(x + 1, y - 1) == MoveType.MOVE)
-                        highLightMove(x + 1, y - 1);
-                    if (isPieceFree(x + 1, y + 1) == MoveType.MOVE)
-                        highLightMove(x + 1, y + 1);
+                    highlightFreePiece(x + 1, y - 1, selectedPiece);
+                    highlightFreePiece(x + 1, y + 1, selectedPiece);
                 }
             }
-            //if (x < 7 for jump)
         }
     }
 
-    private static MoveType isPieceFree(int x, int y) {
+    private static void highlightFreePiece(int x, int y, Piece p) {
+        if (isPieceFree(x, y, p) == MoveType.MOVE)
+            highLightMove(x, y);
+    }
+
+    private static MoveType isPieceFree(int x, int y, Piece selected) {
         Piece p = board.getPieces().get(x).get(y);
         if (p.getStatus() == Piece.Status.NONE) {
             //canMoveTo.add(p);               //
@@ -116,7 +111,7 @@ public class GameManager {
             //p.setBackground(Color.GREEN);   //
             return MoveType.MOVE;
         }
-        else if (p.getStatus() != selectedPiece.getStatus()) {
+        else if (p.getStatus() != selected.getStatus()) {
             //Stop invalid jumps
             if (x < 1 || x > 6)
                 return MoveType.INVALID;
@@ -126,8 +121,8 @@ public class GameManager {
 
             //// ****** change selectedPiece to a parameter Piece
             Piece jumpable = p;
-            int jumpX = (x - selectedPiece.getPosition().getX());
-            int jumpY = (y - selectedPiece.getPosition().getY());
+            int jumpX = (x - selected.getPosition().getX());
+            int jumpY = (y - selected.getPosition().getY());
 
             //Stop invalid jumps
             if (jumpY + y < 0 || jumpY + y > 7)
@@ -141,13 +136,13 @@ public class GameManager {
                 p.setEnabled(true);
                 p.setBackground(Color.GREEN);
 
-                /*
+
                 //copy selectedPiece's info to p, to find jumps from that point
                 Piece tempPiece = Piece.copyPiece(p);
-                p = Piece.copyPieceKeepPosition(selectedPiece, p);
-                getMoveToPieces(p); //p.getStatus() != selectedPiece.getStatus()
+                p = Piece.copyPieceKeepPosition(selected, p);
+                getMoveToPieces(p, selected); //p.getStatus() != selectedPiece.getStatus()
                 p = Piece.copyPiece(tempPiece);
-                */
+
             }
 
             //isPieceFree((jumpX * 2) + x, (jumpY * 2) + y);

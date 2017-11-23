@@ -84,6 +84,13 @@ public class Piece extends JButton {
     }
     public void setKing(boolean king) {
         this.king = king;
+        /*
+        //text over button?
+        if (king)
+            setText("^^");
+        else
+            setText("");
+        */
     }
 
     @Override
