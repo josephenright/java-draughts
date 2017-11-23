@@ -1,5 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 
 public class Piece extends JButton {
 
@@ -39,7 +40,7 @@ public class Piece extends JButton {
         setPosition(x, y);
 
         setStatus(status);
-        king = false;
+        setKing(false);
     }
 
     //Start of instance methods
@@ -81,8 +82,8 @@ public class Piece extends JButton {
     public boolean isKing() {
         return king;
     }
-    public void kingMe() {
-        this.king = true;
+    public void setKing(boolean king) {
+        this.king = king;
     }
 
     @Override
@@ -107,6 +108,8 @@ public class Piece extends JButton {
         else
             blackPieces += change;
     }
+
+
     //End of instance methods
 
 
@@ -132,8 +135,35 @@ public class Piece extends JButton {
             piece.setIcon(null);
             destination.setStatus(piece.getStatus());
             piece.setStatus(Status.NONE);
+            destination.setKing(piece.isKing());
+            piece.setKing(false);
             piece.setEnabled(false);
+            if ((destination.getStatus() == Status.BLACK && destination.getPosition().getX() == 0) ||
+                    (destination.getStatus() == Status.WHITE && destination.getPosition().getX() == 7))
+                destination.setKing(true);
         }
+    }
+
+    public static void jumpPiece(Piece piece, ArrayList<Piece> jumpedPieces, Piece destination) {
+        movePiece(piece, destination);
+        //destination.setBackground(Color.BLACK);
+        for (Piece p : jumpedPieces) {
+            p.setStatus(Status.NONE);
+            p.setIcon(null);
+            p.setEnabled(false);
+        }
+    }
+
+    public static Piece copyPiece(Piece p) {
+        Piece piece = new Piece(p.isWhite(), p.getPosition().getX(), p.getPosition().getY(), p.getStatus());
+        piece.setKing(p.isKing());
+        return piece;
+    }
+    public static Piece copyPieceKeepPosition(Piece original, Piece copy) {
+        Piece piece = new Piece(original.isWhite(), copy.getPosition().getX(),
+                copy.getPosition().getY(), original.getStatus());
+        piece.setKing(original.isKing());
+        return piece;
     }
     //End of static methods
 }
