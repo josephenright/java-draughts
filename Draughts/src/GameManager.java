@@ -9,9 +9,9 @@ public class GameManager {
 
     private static Board board;
     private static Piece selectedPiece;
-    private static ArrayList<Piece> canMoveTo = new ArrayList<>();
-    private static ArrayList<Jump> availableJumps = new ArrayList<>();
-    private static enum MoveType { INVALID, MOVE, JUMP };
+    //private static ArrayList<Piece> canMoveTo = new ArrayList<>();
+    private static ArrayList<Move> possibleMoves = new ArrayList<>();
+    //private static enum MoveType { INVALID, MOVE, JUMP };
 
     private static boolean player1turn;
 
@@ -46,88 +46,121 @@ public class GameManager {
         }
     }
 
-    private static void getMoveToPieces(Piece p) {
-        getMoveToPieces(p, selectedPiece);
+    public static void getMoves(Piece selected) {
+        getMoves(selected, null);
     }
-    private static void getMoveToPieces(Piece p, Piece selectedPiece) {
-        int x = p.getPosition().getX();
-        int y = p.getPosition().getY();
+    public static void getMoves(Piece selected, Move m) {
+        int x = selected.getPosition().getX();
+        int y = selected.getPosition().getY();
 
-        //If black, or can move either direction
-        if (p.getStatus() == Piece.Status.BLACK || p.isKing()) {
+        if (selected.getStatus() == Piece.Status.BLACK || selected.isKing()) {
             //get pieces at where == (x - 1) && (y == (y - 1) || y == (y + 1))
 
             //if x >= 0 for move
             if (x > 0) {
                 //only go right when on leftmost black tiles
-                if (x % 2 == 1 && y == 0) {
-                    //canMoveTo.add
-                    highlightFreePiece(x - 1, y - 1, selectedPiece);
-                }
+                if (x % 2 == 1 && y == 0)
+                    highlightFreePiece(x - 1, y - 1, selected, m);
                 //only go left when on rightmost black tiles
-                else if (x % 2 == 0 && y == 7) {
-                    highlightFreePiece(x - 1, y - 1, selectedPiece);
-                }
+                else if (x % 2 == 0 && y == 7)
+                    highlightFreePiece(x - 1, y - 1, selected, m);
                 //otherwise go both left and right
                 else {
-                    highlightFreePiece(x - 1, y - 1, selectedPiece);
-                    highlightFreePiece(x - 1, y + 1, selectedPiece);
+                    highlightFreePiece(x - 1, y - 1, selected, m);
+                    highlightFreePiece(x - 1, y + 1, selected, m);
                 }
             }
         }
-        if (p.getStatus() == Piece.Status.WHITE || p.isKing()){
+        if (selected.getStatus() == Piece.Status.WHITE || selected.isKing()){
             //get pieces at where == (x + 1) && (y == (y - 1) || y == (y + 1))
 
             //if x <= 7 for move
             if (x < 7) {
                 //only go right when on leftmost black tiles
-                if (x % 2 == 1 && y == 0) {
-                    //canMoveTo.add();
-                    highlightFreePiece(x + 1, y + 1, selectedPiece);
-                }
+                if (x % 2 == 1 && y == 0)
+                    highlightFreePiece(x + 1, y + 1, selected, m);
                 //only go left when on rightmost black tiles
-                else if (x % 2 == 0 && y == 7) {
-                    highlightFreePiece(x + 1, y - 1, selectedPiece);
-                }
+                else if (x % 2 == 0 && y == 7)
+                    highlightFreePiece(x + 1, y - 1, selected, m);
                 //otherwise go both left and right
                 else {
-                    highlightFreePiece(x + 1, y - 1, selectedPiece);
-                    highlightFreePiece(x + 1, y + 1, selectedPiece);
+                    highlightFreePiece(x + 1, y - 1, selected, m);
+                    highlightFreePiece(x + 1, y + 1, selected, m);
                 }
             }
         }
     }
 
-    private static void highlightFreePiece(int x, int y, Piece p) {
-        if (isPieceFree(x, y, p) == MoveType.MOVE)
-            highLightMove(x, y);
+    private static void highlightFreePiece(int x, int y, Piece p, Move m) {
+        boolean jumpOnly = (m == null)? false : true;
+        Move move = isPieceFree(x, y, p, m);
+        if (move.getMoveType() == Move.MoveType.MOVE && !jumpOnly)
+            highLightMove(move);
+        else if (move.getMoveType() == Move.MoveType.JUMP) {
+            highLightMove(move);
+        }
     }
 
-    private static MoveType isPieceFree(int x, int y, Piece selected) {
+    //method for check move
+    //if can't move: jump
+    //if can't jump: move is invalid
+
+    private static Move isPieceFree(int x, int y, Piece selected, Move move) {
         Piece p = board.getPieces().get(x).get(y);
+        //check is move is possible
         if (p.getStatus() == Piece.Status.NONE) {
             //canMoveTo.add(p);               //
             //p.setEnabled(true);             // Do these in a different method
             //p.setBackground(Color.GREEN);   //
-            return MoveType.MOVE;
+            return new Move(selected, p);
         }
+        //check if jump is possible
+        //for loop - check how jumps possible
         else if (p.getStatus() != selected.getStatus()) {
+
             //Stop invalid jumps
             if (x < 1 || x > 6)
-                return MoveType.INVALID;
+                return new Move();
 
-            //get piece 'behind' p
-            //if this piece is free add to availableJumps
-
-            //// ****** change selectedPiece to a parameter Piece
             Piece jumpable = p;
-            int jumpX = (x - selected.getPosition().getX());
-            int jumpY = (y - selected.getPosition().getY());
+            int jumpX = x - selected.getPosition().getX();
+            int jumpY = y - selected.getPosition().getY();
 
             //Stop invalid jumps
-            if (jumpY + y < 0 || jumpY + y > 7)
-                return MoveType.INVALID;
+            if (jumpY + y < 0 || jumpY + y > 7 || jumpX + x < 0 || jumpX + x > 7)
+                return new Move();
 
+            p = board.getPieces().get(jumpX + x).get(jumpY + y);
+            ArrayList<Piece> list = new ArrayList<Piece>();
+            list.add(jumpable);
+
+            //Move m = null;
+            if (p.getStatus() == Piece.Status.NONE) {
+                Move m;
+                if (move == null)
+                    m = new Move(selected, p, list);
+                else {
+                    m = move;
+                    m.addJumpablePiece(jumpable);
+                    m.setDestinationPiece(p);
+                }
+                if (m.getJumpablePieces().size() < 3) {
+                    Piece tempPiece = Piece.copyPiece(p);
+                    p = Piece.copyPieceKeepPosition(selected, p);
+
+                    //feed in the move m. if getMoves is fed null, will create it's own move.
+                    getMoves(p, m);
+                    p = Piece.copyPiece(tempPiece);
+                }
+                return m;
+            }
+
+
+            //if (isPieceFree(x, y, p).getMoveType() == Move.MoveType.MOVE)
+                //highLightMove(isPieceFree(x, y, p));
+            //get copy of a piece
+
+            /*
             p = board.getPieces().get(jumpX + x).get(jumpY + y);
             if (p.getStatus() == Piece.Status.NONE) {
                 ArrayList<Piece> jumpablePieces = new ArrayList<Piece>();
@@ -136,72 +169,49 @@ public class GameManager {
                 p.setEnabled(true);
                 p.setBackground(Color.GREEN);
 
-
+                /*
                 //copy selectedPiece's info to p, to find jumps from that point
                 Piece tempPiece = Piece.copyPiece(p);
                 p = Piece.copyPieceKeepPosition(selected, p);
                 getMoveToPieces(p, selected); //p.getStatus() != selectedPiece.getStatus()
                 p = Piece.copyPiece(tempPiece);
-
+                * /
             }
 
             //isPieceFree((jumpX * 2) + x, (jumpY * 2) + y);
-            return MoveType.JUMP;
+            */
+            //return MoveType.JUMP;
         }
-        else
-            return MoveType.INVALID;
+        //else
+        return new Move();
     }
 
-    private static void highLightMove(int x, int y) {
+    private static void highLightMove(Move m) {
+        int x = m.getDestinationPiece().getPosition().getX();
+        int y = m.getDestinationPiece().getPosition().getY();
+
         Piece p = board.getPieces().get(x).get(y);
-            canMoveTo.add(p);
+            //canMoveTo.add(p);
+            possibleMoves.add(m);
             p.setEnabled(true);
             p.setBackground(Color.GREEN);
     }
-    /*
-    private static void isPieceFree2(int x, int y) {
-        Piece p = board.getPieces().get(x).get(y);
-        if (p.getStatus() == Piece.Status.NONE) {
-            canMoveTo.add(p);
-            p.setEnabled(true);
-            p.setBackground(Color.GREEN);
-        }
-        else if (p.getStatus() != selectedPiece.getStatus()){
-            if (x < 1 || x > 6)
-                return;
-            //get piece 'behind' p
-            //if this piece is free add to availableJumps
-            Piece jumpable = p;
-            int jumpX = (x - selectedPiece.getPosition().getX()) + x;
-            int jumpY = (y - selectedPiece.getPosition().getY()) + y;
 
-            if (jumpY < 0 || jumpY > 7)
-                return;
-
-            p = board.getPieces().get(jumpX).get(jumpY);
-            if (p.getStatus() == Piece.Status.NONE) {
-                ArrayList<Piece> jumpablePieces = new ArrayList<Piece>();
-                jumpablePieces.add(jumpable);
-                availableJumps.add(new Jump(jumpablePieces, p));
-                p.setEnabled(true);
-                p.setBackground(Color.GREEN);
-            }
-        }
-    }
-    */
     private static void deselectCanMoveTo() {
-        for (Piece p : canMoveTo) {
+        for (Move m : possibleMoves) {
+            Piece p = m.getDestinationPiece();
             if (p.getStatus() == Piece.Status.NONE)
                 p.setEnabled(false);
             p.setBackground(Color.BLACK);
         }
-        canMoveTo.clear();
-        for (Jump j : availableJumps) {
-            if (j.getDestination().getStatus() == Piece.Status.NONE)
-                j.getDestination().setEnabled(false);
-            j.getDestination().setBackground(Color.BLACK);
+        //canMoveTo.clear();
+        possibleMoves.clear();
+        for (Move m : possibleMoves) {
+            if (m.getDestinationPiece().getStatus() == Piece.Status.NONE)
+                m.getDestinationPiece().setEnabled(false);
+            m.getDestinationPiece().setBackground(Color.BLACK);
         }
-        availableJumps.clear();
+        possibleMoves.clear();
     }
 
 
@@ -214,51 +224,30 @@ public class GameManager {
             if (p.getStatus() != Piece.Status.NONE) {
                 deselectCanMoveTo();
                 selectPiece(p);
-                getMoveToPieces(p);
-            }
-            else if (canMoveTo.contains(p)){
-                Piece.movePiece(selectedPiece, p);
-                deselectCanMoveTo();
-                deselectPiece();
+                getMoves(p);
             }
             else {
-                for (Jump j : availableJumps) {
-                    if (p == j.getDestination()) {
-                        Piece.jumpPiece(selectedPiece, j.getJumpablePiece(), j.getDestination());
+                Move move = new Move();
+                for(Move m : possibleMoves)
+                    if (m.getDestinationPiece() == p) {// && m.getMoveType() == Move.MoveType.MOVE) {
+                        move = m;
+
                     }
-                }
-                deselectCanMoveTo();
-                deselectPiece();
+                    if (move.getMoveType() == Move.MoveType.MOVE) {
+                        Piece.movePiece(move.getSelectedPiece(), p);
+                        deselectCanMoveTo();
+                        deselectPiece();
+                    }
+                    else if (move.getMoveType() == Move.MoveType.JUMP) {
+                        //do jump stuff
+                        Piece.jumpPiece(move.getSelectedPiece(), move.getJumpablePieces(), move.getDestinationPiece());
+                        deselectCanMoveTo();
+                        deselectPiece();
+                    }
             }
+
         }
     }
 
-    public static class Jump {
-        private ArrayList<Piece> jumpablePieces;
-        private Piece destination;
 
-        public Jump() {
-            setJumpablePiece(null);
-            setDestination(null);
-        }
-
-        public Jump(ArrayList<Piece> jumpablePieces, Piece destination) {
-            setJumpablePiece(jumpablePieces);
-            setDestination(destination);
-        }
-
-        public ArrayList<Piece> getJumpablePiece() {
-            return jumpablePieces;
-        }
-        public void setJumpablePiece(ArrayList<Piece> jumpablePieces) {
-            this.jumpablePieces = jumpablePieces;
-        }
-
-        public Piece getDestination() {
-            return destination;
-        }
-        public void setDestination(Piece destination) {
-            this.destination = destination;
-        }
-    }
 }
