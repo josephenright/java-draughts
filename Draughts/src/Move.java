@@ -59,8 +59,11 @@ public class Move {
     @Override
     public String toString() {
         String s = "From: " + getSelectedPiece().toString() + "\tTo: " + getDestinationPiece().toString() + "\nJumps:";
-        for(Piece p : getJumpablePieces())
-            s += "\n\t" + p.toString();
+        if (getJumpablePieces() != null)
+            for (Piece p : getJumpablePieces())
+                s += "\n\t" + p.toString();
+        else
+            s += "\n\t(none)";
         s += "\nMove Type: " + getMoveType();
         return s;
     }

@@ -4,13 +4,14 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.List;
 
 public class GameManager {
 
     private static Board board;
     private static Piece selectedPiece;
     //private static ArrayList<Piece> canMoveTo = new ArrayList<>();
-    private static ArrayList<Move> possibleMoves = new ArrayList<>();
+    private static List<Move> possibleMoves = new ArrayList<>();
     //private static enum MoveType { INVALID, MOVE, JUMP };
 
     private static boolean player1turn;
@@ -105,24 +106,24 @@ public class GameManager {
     //if can't move: jump
     //if can't jump: move is invalid
 
-    private static Move isPieceFree(int x, int y, Piece selected, Move move) {
-        Piece p = board.getPieces().get(x).get(y);
+    private static Move isPieceFree(int x, int y, Piece selected, Move loopedMove) {
+        Piece destination = board.getPieces().get(x).get(y);
         //check is move is possible
-        if (p.getStatus() == Piece.Status.NONE) {
+        if (destination.getStatus() == Piece.Status.NONE) {
             //canMoveTo.add(p);               //
             //p.setEnabled(true);             // Do these in a different method
             //p.setBackground(Color.GREEN);   //
-            return new Move(selected, p);
+            return new Move(selected, destination);
         }
         //check if jump is possible
         //for loop - check how jumps possible
-        else if (p.getStatus() != selected.getStatus()) {
+        else if (destination.getStatus() != selected.getStatus()) {
 
             //Stop invalid jumps
             if (x < 1 || x > 6)
                 return new Move();
 
-            Piece jumpable = p;
+            Piece jumpable = destination;
             int jumpX = x - selected.getPosition().getX();
             int jumpY = y - selected.getPosition().getY();
 
@@ -130,27 +131,34 @@ public class GameManager {
             if (jumpY + y < 0 || jumpY + y > 7 || jumpX + x < 0 || jumpX + x > 7)
                 return new Move();
 
-            p = board.getPieces().get(jumpX + x).get(jumpY + y);
+            destination = board.getPieces().get(jumpX + x).get(jumpY + y);
             ArrayList<Piece> list = new ArrayList<Piece>();
-            list.add(jumpable);
+            //list.add(jumpable);
 
             //Move m = null;
-            if (p.getStatus() == Piece.Status.NONE) {
+            if (destination.getStatus() == Piece.Status.NONE) {
                 Move m;
-                if (move == null)
-                    m = new Move(selected, p, list);
+                if (loopedMove == null) {
+                    list.add(jumpable);
+                    m = new Move(selected, destination, list);
+                }
                 else {
-                    m = move;
-                    m.addJumpablePiece(jumpable);
-                    m.setDestinationPiece(p);
+                    //m = move;
+                    m = new Move(loopedMove.getSelectedPiece(), loopedMove.getDestinationPiece(), loopedMove.getJumpablePieces());
+                    //m.addJumpablePiece(jumpable);
+                    m.setDestinationPiece(destination);
                 }
                 if (m.getJumpablePieces().size() < 3) {
-                    Piece tempPiece = Piece.copyPiece(p);
-                    p = Piece.copyPieceKeepPosition(selected, p);
+                    m.addJumpablePiece(jumpable);
+                    //Piece tempPiece = Piece.copyPiece(destination);
+                    //destination = Piece.copyPieceKeepPosition(selected, destination);
+
+                    Piece tempPiece = Piece.copyPiece(destination);
+                    tempPiece = Piece.copyPieceKeepPosition(selected, destination);
 
                     //feed in the move m. if getMoves is fed null, will create it's own move.
-                    getMoves(p, m);
-                    p = Piece.copyPiece(tempPiece);
+                    getMoves(tempPiece, m);
+                    //destination = Piece.copyPiece(tempPiece);
                 }
                 return m;
             }
@@ -195,6 +203,10 @@ public class GameManager {
             possibleMoves.add(m);
             p.setEnabled(true);
             p.setBackground(Color.GREEN);
+        if (m.getJumpablePieces() != null) {
+            for(Piece jumpable : m.getJumpablePieces())
+                jumpable.setBackground(Color.YELLOW);
+        }
     }
 
     private static void deselectCanMoveTo() {
@@ -203,6 +215,10 @@ public class GameManager {
             if (p.getStatus() == Piece.Status.NONE)
                 p.setEnabled(false);
             p.setBackground(Color.BLACK);
+            if (m.getJumpablePieces() != null) {
+                for(Piece jumpable : m.getJumpablePieces())
+                    jumpable.setBackground(Color.BLACK);
+            }
         }
         //canMoveTo.clear();
         possibleMoves.clear();
