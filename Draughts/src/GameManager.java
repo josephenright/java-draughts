@@ -106,7 +106,13 @@ public class GameManager {
     //if can't move: jump
     //if can't jump: move is invalid
 
+    private static int isPieceFreeLoopCount;
     private static Move isPieceFree(int x, int y, Piece selected, Move loopedMove) {
+        if (loopedMove == null)
+            isPieceFreeLoopCount = 1;
+        else
+            isPieceFreeLoopCount++;
+
         Piece destination = board.getPieces().get(x).get(y);
         //check is move is possible
         if (destination.getStatus() == Piece.Status.NONE) {
@@ -119,7 +125,7 @@ public class GameManager {
         //for loop - check how jumps possible
         else if (destination.getStatus() != selected.getStatus()) {
 
-            //Stop invalid jumps
+            //Stop invalid jumps (off board)
             if (x < 1 || x > 6)
                 return new Move();
 
@@ -127,29 +133,42 @@ public class GameManager {
             int jumpX = x - selected.getPosition().getX();
             int jumpY = y - selected.getPosition().getY();
 
-            //Stop invalid jumps
+            //Stop invalid jumps (off board)
             if (jumpY + y < 0 || jumpY + y > 7 || jumpX + x < 0 || jumpX + x > 7)
                 return new Move();
 
             destination = board.getPieces().get(jumpX + x).get(jumpY + y);
-            ArrayList<Piece> list = new ArrayList<Piece>();
+            //ArrayList<Piece> list = new ArrayList<Piece>();
             //list.add(jumpable);
 
             //Move m = null;
             if (destination.getStatus() == Piece.Status.NONE) {
                 Move m;
                 if (loopedMove == null) {
-                    list.add(jumpable);
-                    m = new Move(selected, destination, list);
+                    //ArrayList<Piece> list = new ArrayList<Piece>();
+                    //list.add(jumpable);
+                    ArrayList tempList = new ArrayList<Piece>();
+                    tempList.add(jumpable);
+                    m = new Move(selected, destination, tempList);
+                    m.setJumpCount(isPieceFreeLoopCount);
                 }
                 else {
                     //m = move;
-                    m = new Move(loopedMove.getSelectedPiece(), loopedMove.getDestinationPiece(), loopedMove.getJumpablePieces());
+                    //list = loopedMove.getJumpablePieces();
+                    //list.add(jumpable);
+                    //ArrayList<Piece> tempList = list;
+
+                    /*      .clone        */
+                    ArrayList tempList = (ArrayList)loopedMove.getJumpablePieces().clone();
+                    tempList.add(jumpable);
+                    m = new Move(loopedMove.getSelectedPiece(), loopedMove.getDestinationPiece(), tempList);
+                    m.setJumpCount(isPieceFreeLoopCount);
                     //m.addJumpablePiece(jumpable);
                     m.setDestinationPiece(destination);
                 }
+                System.out.println(isPieceFreeLoopCount + ": " + m);
                 if (m.getJumpablePieces().size() < 3) {
-                    m.addJumpablePiece(jumpable);
+                    //m.addJumpablePiece(jumpable);
                     //Piece tempPiece = Piece.copyPiece(destination);
                     //destination = Piece.copyPieceKeepPosition(selected, destination);
 
@@ -157,8 +176,14 @@ public class GameManager {
                     tempPiece = Piece.copyPieceKeepPosition(selected, destination);
 
                     //feed in the move m. if getMoves is fed null, will create it's own move.
-                    getMoves(tempPiece, m);
+                    ArrayList<Piece> tempList = m.getJumpablePieces();
+                    getMoves(tempPiece, new Move(m.getSelectedPiece(), m.getDestinationPiece(), tempList));
                     //destination = Piece.copyPiece(tempPiece);
+                }
+                System.out.println(isPieceFreeLoopCount + ": " + m);
+                //
+                while(m.getJumpablePieces().size() > m.getJumpCount()) {
+                    m.getJumpablePieces().remove(m.getJumpablePieces().size() - 1);
                 }
                 return m;
             }
@@ -244,6 +269,7 @@ public class GameManager {
             }
             else {
                 Move move = new Move();
+                //CHANGE THIS. CAN BE BETTER
                 for(Move m : possibleMoves)
                     if (m.getDestinationPiece() == p) {// && m.getMoveType() == Move.MoveType.MOVE) {
                         move = m;

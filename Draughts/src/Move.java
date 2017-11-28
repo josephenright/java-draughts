@@ -7,6 +7,7 @@ public class Move {
     private Piece destinationPiece;
     private ArrayList<Piece> jumpablePieces;
     private MoveType moveType;
+    private int jumpCount;
 
     public Move() {
         this(null, null, null);
@@ -54,6 +55,13 @@ public class Move {
     }
     public void setMoveType(MoveType moveType) {
         this.moveType = moveType;
+    }
+
+    public int getJumpCount() {
+        return jumpCount;
+    }
+    public void setJumpCount(int jumpCount) {
+        this.jumpCount = jumpCount;
     }
 
     @Override

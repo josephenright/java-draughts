@@ -43,7 +43,7 @@ public class Piece extends JButton {
         setKing(false);
     }
 
-    //Start of instance methods
+    /***    Start of instance methods   ***/
     public void setWhite(boolean white) {
         this.white = white;
     }
@@ -117,10 +117,10 @@ public class Piece extends JButton {
     }
 
 
-    //End of instance methods
+    /***    End of instance methods   ***/
 
 
-    //Start of static methods
+    /***    Start of static methods   ***/
     public static ImageIcon getWhiteIcon() {
         return whiteIcon;
     }
@@ -135,6 +135,7 @@ public class Piece extends JButton {
         Piece.blackIcon = blackIcon;
     }
 
+    //Move piece to destination
     public static void movePiece(Piece piece, Piece destination) {
         if (destination.getStatus() == Piece.Status.NONE) {
             //piece.setBackground(Color.BLACK);
@@ -151,6 +152,7 @@ public class Piece extends JButton {
         }
     }
 
+    //Move piece to destination, and remove draughts from jumpedPieces
     public static void jumpPiece(Piece piece, ArrayList<Piece> jumpedPieces, Piece destination) {
         movePiece(piece, destination);
         //destination.setBackground(Color.BLACK);
@@ -172,5 +174,5 @@ public class Piece extends JButton {
         piece.setKing(original.isKing());
         return piece;
     }
-    //End of static methods
+    /***    End of static methods   ***/
 }
