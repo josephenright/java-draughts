@@ -7,7 +7,6 @@ public class Move {
     private Piece destinationPiece;
     private ArrayList<Piece> jumpablePieces;
     private MoveType moveType;
-    private int jumpCount;
 
     public Move() {
         this(null, null, null);
@@ -57,16 +56,20 @@ public class Move {
         this.moveType = moveType;
     }
 
-    public int getJumpCount() {
-        return jumpCount;
-    }
-    public void setJumpCount(int jumpCount) {
-        this.jumpCount = jumpCount;
+    public boolean isEqual(Move other) {
+        if (getSelectedPiece() != other.getSelectedPiece())
+            return false;
+        if (getDestinationPiece() != other.getDestinationPiece())
+            return false;
+        if (!getJumpablePieces().equals(other.getJumpablePieces()))
+            return false;
+        return true;
     }
 
     @Override
     public String toString() {
-        String s = "From: " + getSelectedPiece().toString() + "\tTo: " + getDestinationPiece().toString() + "\nJumps:";
+        String s = "From: " + getSelectedPiece().toString() + "\tTo: " + getDestinationPiece().toString() + "\nJumps:" +
+                getJumpablePieces().size();
         if (getJumpablePieces() != null)
             for (Piece p : getJumpablePieces())
                 s += "\n\t" + p.toString();
