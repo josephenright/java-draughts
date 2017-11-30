@@ -23,12 +23,15 @@ public class GameManager {
     }
 
     public static void setUpBoard(Board b) {
-        if (board != null)
+        if (board != null) {
             board.dispose();
-        if (board == null) { //not working
+        }
+        if (b == null) { //not working
             player1turn = true;
             Piece.resetPieceCount();
         }
+        else
+            b.setLocation(board.getLocation());
             //board.setVisible(false);
 
         board = (b == null)? new Board() : b;
@@ -155,36 +158,16 @@ public class GameManager {
 
             if (destination.getStatus() == Piece.Status.NONE) {
                 Move m;
-                if (loopedMove == null) {
-                    ArrayList tempList = new ArrayList<Piece>();
-                    tempList.add(jumpable);
-                    m = new Move(selected, destination, tempList);
-                }
+                if (loopedMove == null)
+                    m = new Move(selected, destination, jumpable);
                 else {
                     //If jumpable piece is already in the list of jumpable pieces, this move is invalid.
                     //Pieces cannot be jumped twice
-                    if (loopedMove.getJumpablePieces().contains(jumpable))
+                    if (loopedMove.getJumpablePieces() == jumpable)
                         return new Move();
 
-                    /*      .clone        */
-                    ArrayList tempList = (ArrayList)loopedMove.getJumpablePieces().clone();
-                    tempList.add(jumpable);
-                    m = new Move(loopedMove.getDestinationPiece(), destination, tempList);
-                    //m.addJumpablePiece(jumpable);
-                    //m.setDestinationPiece(destination);
+                    m = new Move(loopedMove.getDestinationPiece(), destination, jumpable);
                 }
-                //System.out.println("Init: " + m);
-                /*
-                if (m.getJumpablePieces().size() < 9) {
-                    Piece tempPiece = Piece.copyPiece(destination);
-                    tempPiece = Piece.copyPieceKeepPosition(selected, destination);
-
-                    //feed in the move m. if getMoves is fed null, will create it's own move.
-                    ArrayList<Piece> tempList = (ArrayList)m.getJumpablePieces().clone();
-                    getMoves(tempPiece, new Move(m.getSelectedPiece(), m.getDestinationPiece(), tempList));
-                    //destination = Piece.copyPiece(tempPiece);
-                }
-                */
                 System.out.println("Return: " + m);
                 //
                 return m;
@@ -203,10 +186,8 @@ public class GameManager {
             possibleMoves.add(m);
             p.setEnabled(true);
             p.setBackground(Color.GREEN);
-        if (m.getJumpablePieces() != null) {
-            for(Piece jumpable : m.getJumpablePieces())
-                jumpable.setBackground(Color.YELLOW);
-        }
+        if (m.getJumpablePieces() != null)
+            m.getJumpablePieces().setBackground(Color.YELLOW);
     }
 
     private static void deselectCanMoveTo() {
@@ -215,10 +196,8 @@ public class GameManager {
             if (p.getStatus() == Piece.Status.NONE)
                 p.setEnabled(false);
             p.setBackground(Color.BLACK);
-            if (m.getJumpablePieces() != null) {
-                for(Piece jumpable : m.getJumpablePieces())
-                    jumpable.setBackground(Color.BLACK);
-            }
+            if (m.getJumpablePieces() != null)
+                    m.getJumpablePieces().setBackground(Color.BLACK);
         }
         //canMoveTo.clear();
         /*
@@ -285,7 +264,7 @@ public class GameManager {
                     deselectPiece();
 
                         //ArrayList<Piece> tempList = (ArrayList)move.getJumpablePieces().clone();
-                        Move newMove = new Move(move.getSelectedPiece(), move.getDestinationPiece(), new ArrayList<Piece>());
+                        Move newMove = new Move(move.getSelectedPiece(), move.getDestinationPiece(), null);
                         //getMoves(move.getSelectedPiece(), newMove);
                         //getMoves(move.getDestinationPiece());
 

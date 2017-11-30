@@ -5,7 +5,7 @@ public class Move {
 
     private Piece selectedPiece;
     private Piece destinationPiece;
-    private ArrayList<Piece> jumpablePieces;
+    private Piece jumpablePiece;
     private MoveType moveType;
 
     public Move() {
@@ -18,10 +18,10 @@ public class Move {
         setMoveType(MoveType.MOVE);
     }
 
-    public Move(Piece selectedPiece, Piece destinationPiece, ArrayList<Piece> jumpablePieces) {
+    public Move(Piece selectedPiece, Piece destinationPiece, Piece jumpablePiece) {
         setSelectedPiece(selectedPiece);
         setDestinationPiece(destinationPiece);
-        setJumpablePieces(jumpablePieces);
+        setJumpablePieces(jumpablePiece);
         setMoveType(MoveType.JUMP);
     }
 
@@ -39,14 +39,14 @@ public class Move {
         this.destinationPiece = destinationPiece;
     }
 
-    public ArrayList<Piece> getJumpablePieces() {
-        return jumpablePieces;
+    public Piece getJumpablePieces() {
+        return jumpablePiece;
     }
-    public void setJumpablePieces(ArrayList<Piece> jumpablePieces) {
-        this.jumpablePieces = jumpablePieces;
+    public void setJumpablePieces(Piece jumpablePiece) {
+        this.jumpablePiece = jumpablePiece;
     }
     public void addJumpablePiece(Piece p) {
-        jumpablePieces.add(p);
+        jumpablePiece.add(p);
     }
 
     public MoveType getMoveType() {
@@ -66,13 +66,15 @@ public class Move {
         return true;
     }
 
+    /**
+     *
+     * @return
+     */
     @Override
     public String toString() {
-        String s = "From: " + getSelectedPiece().toString() + "\tTo: " + getDestinationPiece().toString() + "\nJumps:" +
-                getJumpablePieces().size();
+        String s = "From: " + getSelectedPiece().toString() + "\tTo: " + getDestinationPiece().toString() + "\nJumps:";
         if (getJumpablePieces() != null)
-            for (Piece p : getJumpablePieces())
-                s += "\n\t" + p.toString();
+            s += "\n\t" + getJumpablePieces().toString();
         else
             s += "\n\t(none)";
         s += "\nMove Type: " + getMoveType();

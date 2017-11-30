@@ -124,9 +124,6 @@ public class GameMenu {
         String s = (player1Turn)? "Black's turn" : "White's turn";
         turnTracker.setText(s);
     }
-    public boolean getTurn() {
-        return (turnTracker.getText().equals("Black's turn"));
-    }
 
     public void setWhiteCount() {
         whiteCount.setText("White left: " + Piece.getWhitePieces());

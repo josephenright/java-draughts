@@ -7,28 +7,25 @@ public class Board extends JFrame implements Serializable {
 
     private ArrayList<ArrayList<Piece>> pieces = new ArrayList<>();
 
+    /**
+     * Creates an object of type Board, with a default size of 800 pixels.
+     */
     public Board() {
-        this(800, 800, Piece.Status.BLACK);
+        this(800);
     }
 
-    public Board(Piece.Status p1Colour) {
-        this(800, 800, p1Colour);
-    }
 
-    public Board(int width, int height, Piece.Status p1Colour) {
+    /** Creates a new object of type Board, where size is the length/width of the JFrame
+     *
+     * @param size The size (in pixels) of the JFrame window
+     */
+    public Board(int size) {
         super("Draughts");
         setLayout(new GridLayout(8, 8));
-        setSize(width, height);
+        setSize(size, size);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        //DO JMENUBAR
-        /*
-        JMenuBar bar = new JMenuBar();
-        setJMenuBar(bar);
-        JMenu jMenu = new JMenu("Game");
-        jMenu.add(new JMenuItem("Item"));
-        */
         //Generate 8x8 grid. (0,0) is top left
         for (int x = 0; x < 8; x++) {
             ArrayList<Piece> row = new ArrayList<>();
@@ -49,9 +46,12 @@ public class Board extends JFrame implements Serializable {
             }
             pieces.add(row);
         }
-        System.out.println("done");
     }
 
+    /**
+     * The Pieces that make up the board
+     * @return the List of List of board pieces.
+     */
     public ArrayList<ArrayList<Piece>> getPieces() {
         return pieces;
     }
