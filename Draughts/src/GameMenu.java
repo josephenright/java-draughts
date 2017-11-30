@@ -1,10 +1,7 @@
 import javax.swing.*;
-import javax.swing.event.MenuListener;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
-import java.time.LocalDateTime;
 
 public class GameMenu {
 
@@ -16,12 +13,12 @@ public class GameMenu {
     public JMenuBar createMenu() {
         JMenuBar bar = new JMenuBar();
 
+        //create JMenu
         JMenu jMenu = new JMenu("Game");
         MenuListener menuListener = new MenuListener();
-
         bar.add(jMenu);
 
-
+        //create JMenuItems
         JMenuItem item = new JMenuItem("New Game");
         jMenu.add(item);
         item.addActionListener(menuListener);
@@ -35,10 +32,11 @@ public class GameMenu {
         item.addActionListener(menuListener);
 
         item = new JMenuItem("Exit");
-        //item.addActionListener(menuListener);
         jMenu.add(item);
         item.addActionListener(menuListener);
 
+
+        //create counters and turn tracker
         whiteCount = new JMenuItem("White left: " + Piece.getWhitePieces());
         bar.add(whiteCount);
         whiteCount.setEnabled(false);
@@ -53,20 +51,20 @@ public class GameMenu {
         return bar;
     }
 
-    public class MenuListener implements ActionListener {
 
+    //ActionListener for the game's menu
+    public class MenuListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            //System.out.println("MENU");
+            //Warn the user, then start a new game
             if (e.getActionCommand().equals("New Game")) {
                 if (JOptionPane.showConfirmDialog(null, "Start a new game?\n" +
                         "You will lose any unsaved progress") == JOptionPane.YES_OPTION) {
                     GameManager.setUpBoard(null);
                 }
             }
+            //Save the current game to file
             else if (e.getActionCommand().equals("Save")) {
-                //System.out.println("Save Game\t" + e.getSource().toString());
-                //JMenuItem item = (JMenuItem)e.getSource();
                 try {
                     saveToFile();
                 }
@@ -76,11 +74,13 @@ public class GameMenu {
                     exception.printStackTrace();
                 }
             }
+            //Load the game saved to file
             else if (e.getActionCommand().equals("Load")) {
                 openFromFile();
                 if (board != null)
                     GameManager.setUpBoard(board);
             }
+            //Warn the user, then exit the game.
             else if (e.getActionCommand().equals("Exit")) {
                 System.out.println("Quit Game");
                 if (JOptionPane.showConfirmDialog(null, "Are you sure you want to quit?\n" +
@@ -91,15 +91,18 @@ public class GameMenu {
         }
     }
 
+
+
+    //Save data to file
     public void saveToFile() throws IOException {
         ObjectOutputStream os;
-        //LocalDateTime dateTime = LocalDateTime.now(); //https://stackoverflow.com/questions/5175728/how-to-get-the-current-date-time-in-java
         os = new ObjectOutputStream(new FileOutputStream("saves/draughts.save"));
         os.writeObject(GameManager.getBoard());
         os.writeObject(new SaveDetails(GameManager.getTurn(), Piece.getWhitePieces(), Piece.getWhitePieces()));
         os.close();
     }
 
+    //Load data from file
     private void openFromFile() {
         try {
             ObjectInputStream is;
@@ -107,7 +110,8 @@ public class GameMenu {
             board = (Board)is.readObject();
             SaveDetails details = (SaveDetails)is.readObject();
             is.close();
-            //GameManager.main();
+
+            //Use loaded data to set up game
             GameManager.setPlayer1turn(details.isPlayer1Turn());
             Piece.setBlackPieces(details.getBlackCount());
             Piece.setWhitePieces(details.getWhiteCount());
@@ -120,17 +124,25 @@ public class GameMenu {
 
     }
 
+
+
+    /* Start of UI methods */
+
+    //Update the turn tracker on the JMenu
     public void changeTurn(boolean player1Turn) {
         String s = (player1Turn)? "Black's turn" : "White's turn";
         turnTracker.setText(s);
     }
 
+    //Update the white piece counter on the UI.
     public void setWhiteCount() {
         whiteCount.setText("White left: " + Piece.getWhitePieces());
     }
+
+    //Update the black piece counter on the UI.
     public void setBlackCount() {
         blackCount.setText("Black left: " + Piece.getBlackPieces());
     }
 
-
+    /* End of UI methods */
 }

@@ -1,47 +1,21 @@
 import javax.swing.*;
 import java.awt.*;
 import java.io.Serializable;
-import java.util.ArrayList;
 
 public class Piece extends JButton implements Serializable {
 
-    /**
-     * The ImageIcon for the White Pieces.
-     */
     private static ImageIcon whiteIcon;
-    /**
-     * The ImageIcon for the black Pieces.
-     */
     private static ImageIcon blackIcon;
-    /**
-     * The number of white pieces on the board.
-     */
+    private static ImageIcon whiteKing;
+    private static ImageIcon blackKing;
     private static int whitePieces = 0;
-    /**
-     * The number of white pieces on the board.
-     */
     private static int blackPieces = 0;
 
-    /**
-     * The Status of the Piece, either (NONE, WHITE, BLACK).
-     */
     enum Status {NONE, WHITE, BLACK};
 
-    /**
-     * Whether or not the square is white.
-     */
     private boolean white;
-    /**
-     * The Status of the Piece.
-     */
     private Status status;
-    /**
-     * The Position of the Piece.
-     */
     private Position position;
-    /**
-     * Whether or not the Piece is a king.
-     */
     private boolean king;
 
 
@@ -180,13 +154,19 @@ public class Piece extends JButton implements Serializable {
      */
     public void setKing(boolean king) {
         this.king = king;
-        /*
-        //text over button?
-        if (king)
-            setText("^^");
-        else
-            setText("");
-        */
+        if (king) {
+            if (getStatus() == Status.WHITE)
+                setIcon(whiteKing);
+            else if (getStatus() == Status.BLACK)
+                setIcon(blackKing);
+        }
+        else {
+
+            if (getStatus() == Status.WHITE)
+                setIcon(whiteIcon);
+            else if (getStatus() == Status.BLACK)
+                setIcon(blackIcon);
+        }
     }
 
 
@@ -195,12 +175,14 @@ public class Piece extends JButton implements Serializable {
      */
     private void setWhiteIcon() {
         whiteIcon = new ImageIcon("images/white.png");
+        whiteKing = new ImageIcon("images/whiteKing.png");
     }
     /**
      * Set the Black ImageIcon to 'images/black.png'.
      */
     private void setBlackIcon() {
         blackIcon = new ImageIcon("images/red.png");
+        blackKing = new ImageIcon("images/redKing.png");
     }
 
 

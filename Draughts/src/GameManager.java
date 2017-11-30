@@ -11,28 +11,29 @@ public class GameManager {
 
     private static Board board;
     private static Piece selectedPiece;
-    //private static ArrayList<Piece> canMoveTo = new ArrayList<>();
     private static List<Move> possibleMoves = new ArrayList<>();
-    //private static enum MoveType { INVALID, MOVE, JUMP };
 
-    private static boolean player1turn;
-    private static GameMenu gameMenu;
+    private static boolean player1turn; //true = player 1's turn. false = player 2's turn
+    private static GameMenu gameMenu; //JMenu creation and handler
 
     public static void main(String[] args) {
         setUpBoard(null);
     }
 
+    //Create and display Board. Feeding an argument will load that board
+    //(ie when loading from file). null argument creates a new board.
     public static void setUpBoard(Board b) {
+        //If there is already a Board, close it
         if (board != null) {
             board.dispose();
         }
-        if (b == null) { //not working
+        //Default values, for when a new game is started
+        if (b == null) {
             player1turn = true;
             Piece.resetPieceCount();
         }
-        else
-            b.setLocation(board.getLocation());
-            //board.setVisible(false);
+        //else //JFrame will not change location when loading games
+            //b.setLocation(board.getLocation());
 
         board = (b == null)? new Board() : b;
         possibleMoves.clear();
@@ -45,38 +46,26 @@ public class GameManager {
                     p.addActionListener(pieceListener);
             }
         }
+        //Create and add JMenu
         gameMenu = new GameMenu();
         board.setJMenuBar(gameMenu.createMenu());
+
         board.setVisible(true);
     }
 
 
-    private static void selectPiece(Piece p) {
-        if (selectedPiece != null)
-            selectedPiece.setBackground(Color.BLACK);
-        selectedPiece = p;
-        p.setBackground(Color.CYAN);
-    }
-    private static void deselectPiece() {
-        if (selectedPiece != null) {
-            selectedPiece.setBackground(Color.BLACK);
-            if (selectedPiece.getStatus() == Piece.Status.NONE)
-                selectedPiece.setEnabled(false);
-            selectedPiece = null;
-        }
-    }
 
-    public static void getMoves(Piece selected) {
-        getMoves(selected, null);
-    }
-    public static void getMoves(Piece selected, Move m) {
+    /* Start of movement methods */
+
+    //Part 1 of getting possible moves for the selected Piece.
+    //use (Move m = null) for first call of the method
+    //Moves are looped in for multi-jumps
+    private static void getMoves(Piece selected, Move m) {
         int x = selected.getPosition().getX();
         int y = selected.getPosition().getY();
 
         if (selected.getStatus() == Piece.Status.BLACK || selected.isKing()) {
-            //get pieces at where == (x - 1) && (y == (y - 1) || y == (y + 1))
-
-            //if x >= 0 for move
+            //if x > 0 for moving up the board
             if (x > 0) {// && y >= 0 && y < 8) {
                 //only go right when on leftmost black tiles
                 if (x % 2 == 1 && y == 0)
@@ -92,9 +81,7 @@ public class GameManager {
             }
         }
         if (selected.getStatus() == Piece.Status.WHITE || selected.isKing()){
-            //get pieces at where == (x + 1) && (y == (y - 1) || y == (y + 1))
-
-            //if x <= 7 for move
+            //if x <=7 for moving down the board
             if (x < 7 && y >= 0 && y < 8) {
                 //only go right when on leftmost black tiles
                 if (x % 2 == 1 && y == 0)
@@ -111,40 +98,39 @@ public class GameManager {
         }
     }
 
+    //Part 2 of getting possible moves for the selected Piece.
+    //use (Move m = null) for first call of the method
+    //Moves are looped in for multi-jumps
     private static void highlightFreePiece(int x, int y, Piece p, Move m) {
         boolean jumpOnly = (m == null)? false : true;
-        Move move = isPieceFree(x, y, p, m);
-        if (move.getMoveType() == Move.MoveType.MOVE && !jumpOnly)
+        Move move = isPieceFree(x, y, p);
+        //If move is of type Move, and this is a multi-jump, or it's a jump move
+        if ((move.getMoveType() == Move.MoveType.MOVE && !jumpOnly) ||
+            (move.getMoveType() == Move.MoveType.JUMP))
             highLightMove(move);
+        /*
         else if (move.getMoveType() == Move.MoveType.JUMP) {
             highLightMove(move);
-        }
+        }*/
     }
 
-    //method for check move
-    //if can't move: jump
-    //if can't jump: move is invalid
-
-    private static Move isPieceFree(int x, int y, Piece selected, Move loopedMove) {
-        //if (x < 0 || x > 7 || y < 0 || y > 7)
-            //return new Move();
-
+    //Part 3 (final) of getting possible moves for the selected Piece.
+    //use (Move m = null) for first call of the method
+    //Moves are looped in for multi-jumps
+    private static Move isPieceFree(int x, int y, Piece selected) {
         Piece destination = board.getPieces().get(x).get(y);
-        //check is move is possible
-        if (destination.getStatus() == Piece.Status.NONE) {
-            //canMoveTo.add(p);               //
-            //p.setEnabled(true);             // Do these in a different method
-            //p.setBackground(Color.GREEN);   //
-            return new Move(selected, destination);
-        }
-        //check if jump is possible
-        //for loop - check how jumps possible
-        else if (destination.getStatus() != selected.getStatus()) {
 
+        //if regular move is possible, return Move
+        if (destination.getStatus() == Piece.Status.NONE)
+            return new Move(selected, destination);
+
+        //if jump is possible, return Move
+        else if (destination.getStatus() != selected.getStatus()) {
             //Stop invalid jumps (off board)
             if (x < 1 || x > 6)
                 return new Move();
 
+            //assign piece to be jumped, and get the position behind jumpable
             Piece jumpable = destination;
             int jumpX = x - selected.getPosition().getX();
             int jumpY = y - selected.getPosition().getY();
@@ -153,30 +139,25 @@ public class GameManager {
             if (jumpY + y < 0 || jumpY + y > 7 || jumpX + x < 0 || jumpX + x > 7)
                 return new Move();
 
+            //get piece at the position behind jumpable
             destination = board.getPieces().get(jumpX + x).get(jumpY + y);
 
-
+            //If the piece is free, return the jump Move
             if (destination.getStatus() == Piece.Status.NONE) {
-                Move m;
-                if (loopedMove == null)
-                    m = new Move(selected, destination, jumpable);
-                else {
-                    //If jumpable piece is already in the list of jumpable pieces, this move is invalid.
-                    //Pieces cannot be jumped twice
-                    if (loopedMove.getJumpablePieces() == jumpable)
-                        return new Move();
-
-                    m = new Move(loopedMove.getDestinationPiece(), destination, jumpable);
-                }
-                System.out.println("Return: " + m);
-                //
-                return m;
+                return new Move(selected, destination, jumpable);
             }
         }
-        //else
+        //otherwise move is invalid
         return new Move();
     }
 
+    /* End of movement methods */
+
+
+
+    /* Start of selection and highlight methods */
+
+    //Highlight the Move generated by isPieceFree
     private static void highLightMove(Move m) {
         int x = m.getDestinationPiece().getPosition().getX();
         int y = m.getDestinationPiece().getPosition().getY();
@@ -190,6 +171,25 @@ public class GameManager {
             m.getJumpablePieces().setBackground(Color.YELLOW);
     }
 
+    //Highlight and create a reference to selected piece
+    private static void selectPiece(Piece p) {
+        if (selectedPiece != null)
+            selectedPiece.setBackground(Color.BLACK);
+        selectedPiece = p;
+        p.setBackground(Color.CYAN);
+    }
+
+    //Unhighlight and unselect the currently selected piece
+    private static void deselectPiece() {
+        if (selectedPiece != null) {
+            selectedPiece.setBackground(Color.BLACK);
+            if (selectedPiece.getStatus() == Piece.Status.NONE)
+                selectedPiece.setEnabled(false);
+            selectedPiece = null;
+        }
+    }
+
+    //Deselct/unhighlight moves
     private static void deselectCanMoveTo() {
         for (Move m : possibleMoves) {
             Piece p = m.getDestinationPiece();
@@ -199,19 +199,34 @@ public class GameManager {
             if (m.getJumpablePieces() != null)
                     m.getJumpablePieces().setBackground(Color.BLACK);
         }
-        //canMoveTo.clear();
-        /*
         possibleMoves.clear();
-        for (Move m : possibleMoves) {
-            if (m.getDestinationPiece().getStatus() == Piece.Status.NONE)
-                m.getDestinationPiece().setEnabled(false);
-            m.getDestinationPiece().setBackground(Color.BLACK);
-        }*/
-        possibleMoves.clear();
+    }
+
+    /* End of selection and highlight methods */
+
+    private static void changeTurn() {
+        player1turn = !player1turn;
+        gameMenu.changeTurn(player1turn);
+    }
+
+
+    //Get game board/all pieces
+    public static Board getBoard() {
+        return board;
+    }
+
+    public static boolean getTurn() {
+        return player1turn;
+    }
+
+    //Set player1Turn - Used when loading game from file
+    public static void setPlayer1turn(boolean player1turn) {
+        GameManager.player1turn = player1turn;
     }
 
 
 
+    //ActionListener for the game board
     static class PieceListener implements ActionListener {
 
         @Override
@@ -220,81 +235,91 @@ public class GameManager {
             handleMove(p);
         }
 
+        //handleMove called by actionPerformed.
         private void handleMove(Piece p) {
             handleMove(p,null);
         }
+
+        //handleMove called from within itself
         private void handleMove(Piece p, Move loopedMove) {
-            //if (p.getStatus() != Piece.Status.NONE) {
+            //If piece is black and it's blacks turn, or vice versa
             if ((player1turn && p.getStatus() == Piece.Status.BLACK) || (!player1turn && p.getStatus() == Piece.Status.WHITE)) {
+                //Deselect any currently selected moves, and get moves for this piece
                 deselectCanMoveTo();
                 selectPiece(p);
                 getMoves(p, loopedMove);
+
+                //If there are no available moves, don't highlight anything
                 if (possibleMoves.size() == 0) {
                     deselectPiece();
                     deselectCanMoveTo();
-                    if (loopedMove != null)
+
+                    //If there are no available moves, and there is a looped move, switch turns
+                    if (loopedMove != null) {
                         changeTurn();
+
+                        //if all enemy pieces are gone, player wins
+                        //do this
+                        if (Piece.getWhitePieces() == 0) {
+                            JOptionPane.showMessageDialog(null, "Black wins!");
+                            gameOver();
+                        }
+                        else if (Piece.getBlackPieces() == 0) {
+                            JOptionPane.showMessageDialog(null, "White wins!");
+                            gameOver();
+                        }
+                    }
                 }
-                System.out.println("Possible moves:\t" + possibleMoves.size());
             }
-            else {//if ((player1turn && p.getStatus() == Piece.Status.BLACK) || (!player1turn && p.getStatus() == Piece.Status.WHITE)) {
+            else {
+                //Dummy move must be assigned to keep compiler happy
                 Move move = new Move();
-                //CHANGE THIS. CAN BE BETTER
-                //System.out.println("Possible moves:\t" + possibleMoves.size());
-                for(Move m : possibleMoves)
+
+                //move = the first available move
+                for(Move m : possibleMoves) {
                     if (m.getDestinationPiece() == p) {// && m.getMoveType() == Move.MoveType.MOVE) {
                         move = m;
                         break;
                     }
-                if (move.getMoveType() == Move.MoveType.MOVE) {
-                    Piece.movePiece(move.getSelectedPiece(), p);
-                    deselectCanMoveTo();
-                    deselectPiece();
-                    changeTurn();
                 }
-                else if (move.getMoveType() == Move.MoveType.JUMP) {
-                    //do jump stuff
-                    Piece.jumpPiece(move.getSelectedPiece(), move.getJumpablePieces(), move.getDestinationPiece());
-                    gameMenu.setWhiteCount();
-                    gameMenu.setBlackCount();
-                    //remove moves that are no longer possible
-                    //feed in the move m. if getMoves is fed null, will create it's own move.
+                if (move != null) {
+                    if (move.getMoveType() == Move.MoveType.MOVE) {
+                        //Move the piece, and switch turn
+                        Piece.movePiece(move.getSelectedPiece(), p);
+                        deselectCanMoveTo();
+                        deselectPiece();
+                        changeTurn();
+                    }
+                    else if (move.getMoveType() == Move.MoveType.JUMP) {
+                        //do jump stuff
+                        Piece.jumpPiece(move.getSelectedPiece(), move.getJumpablePieces(), move.getDestinationPiece());
 
-                    deselectCanMoveTo();
-                    deselectPiece();
+                        //update the UI counters
+                        gameMenu.setWhiteCount();
+                        gameMenu.setBlackCount();
 
-                        //ArrayList<Piece> tempList = (ArrayList)move.getJumpablePieces().clone();
-                        Move newMove = new Move(move.getSelectedPiece(), move.getDestinationPiece(), null);
-                        //getMoves(move.getSelectedPiece(), newMove);
-                        //getMoves(move.getDestinationPiece());
+                        //deselect the selected pieces
+                        deselectCanMoveTo();
+                        deselectPiece();
 
-                        //trigger method again
-                        handleMove(move.getDestinationPiece(), newMove);
+                        Move moveToLoop = new Move(move.getSelectedPiece(), move.getDestinationPiece(), null);
 
-                    //trigger actionPerformed
-                    //if no more jumps available
-                    // {
-                    //deselectCanMoveTo();
-                    //deselectPiece();
-                    //}
-                    //else highlight still available moves
+                        //loop the move (find out if multi-jumps are available)
+                        handleMove(move.getDestinationPiece(), moveToLoop);
+                    }
                 }
+            }
+        }
+
+        private void gameOver() {
+            if (JOptionPane.showConfirmDialog(null, "Would you like " +
+                "to start a new game?") == JOptionPane.YES_OPTION)
+                setUpBoard(null);
+            else {
+                JOptionPane.showMessageDialog(null, "Thanks for playing");
+                System.exit(0);
             }
         }
     }
 
-    private static void changeTurn() {
-        player1turn = !player1turn;
-        gameMenu.changeTurn(player1turn);
-    }
-
-    public static Board getBoard() {
-        return board;
-    }
-    public static boolean getTurn() {
-        return player1turn;
-    }
-    public static void setPlayer1turn(boolean player1turn) {
-        GameManager.player1turn = player1turn;
-    }
 }
