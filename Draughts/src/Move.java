@@ -52,7 +52,7 @@ public class Move {
     public MoveType getMoveType() {
         return moveType;
     }
-    public void setMoveType(MoveType moveType) {
+    private void setMoveType(MoveType moveType) {
         this.moveType = moveType;
     }
 

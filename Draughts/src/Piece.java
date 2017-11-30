@@ -1,8 +1,9 @@
 import javax.swing.*;
 import java.awt.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Piece extends JButton {
+public class Piece extends JButton implements Serializable {
 
     static ImageIcon whiteIcon;
     static ImageIcon blackIcon;
@@ -32,7 +33,8 @@ public class Piece extends JButton {
             setBlackIcon();
 
         if (white)
-            setBackground(Color.WHITE);
+            setBackground(Color.LIGHT_GRAY);
+            //setBackground(Color.WHITE);
         else
             setBackground(Color.BLACK);
         setWhite(white);
