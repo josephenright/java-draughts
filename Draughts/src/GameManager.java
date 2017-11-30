@@ -16,6 +16,7 @@ public class GameManager {
     //private static enum MoveType { INVALID, MOVE, JUMP };
 
     private static boolean player1turn;
+    private static GameMenu gameMenu;
 
     public static void main(String[] args) {
         setUpBoard(null);
@@ -24,10 +25,13 @@ public class GameManager {
     public static void setUpBoard(Board b) {
         if (board != null)
             board.dispose();
+        if (board == null) { //not working
+            player1turn = true;
+            Piece.resetPieceCount();
+        }
             //board.setVisible(false);
 
         board = (b == null)? new Board() : b;
-        player1turn = false;
         possibleMoves.clear();
 
         //Add action listener to pieces
@@ -38,7 +42,8 @@ public class GameManager {
                     p.addActionListener(pieceListener);
             }
         }
-        board.setJMenuBar(GameMenu.createMenu());
+        gameMenu = new GameMenu();
+        board.setJMenuBar(gameMenu.createMenu());
         board.setVisible(true);
     }
 
@@ -240,39 +245,39 @@ public class GameManager {
             handleMove(p,null);
         }
         private void handleMove(Piece p, Move loopedMove) {
-            if (p.getStatus() != Piece.Status.NONE) {
+            //if (p.getStatus() != Piece.Status.NONE) {
+            if ((player1turn && p.getStatus() == Piece.Status.BLACK) || (!player1turn && p.getStatus() == Piece.Status.WHITE)) {
                 deselectCanMoveTo();
                 selectPiece(p);
-                /*
-                if (loopedMove == null)
-                    getMoves(p);
-                else
-                    getMoves(p, loopedMove);
-                    */
                 getMoves(p, loopedMove);
                 if (possibleMoves.size() == 0) {
                     deselectPiece();
                     deselectCanMoveTo();
+                    if (loopedMove != null)
+                        changeTurn();
                 }
                 System.out.println("Possible moves:\t" + possibleMoves.size());
             }
-            else {
+            else {//if ((player1turn && p.getStatus() == Piece.Status.BLACK) || (!player1turn && p.getStatus() == Piece.Status.WHITE)) {
                 Move move = new Move();
                 //CHANGE THIS. CAN BE BETTER
                 //System.out.println("Possible moves:\t" + possibleMoves.size());
                 for(Move m : possibleMoves)
                     if (m.getDestinationPiece() == p) {// && m.getMoveType() == Move.MoveType.MOVE) {
                         move = m;
+                        break;
                     }
                 if (move.getMoveType() == Move.MoveType.MOVE) {
                     Piece.movePiece(move.getSelectedPiece(), p);
                     deselectCanMoveTo();
                     deselectPiece();
+                    changeTurn();
                 }
                 else if (move.getMoveType() == Move.MoveType.JUMP) {
                     //do jump stuff
                     Piece.jumpPiece(move.getSelectedPiece(), move.getJumpablePieces(), move.getDestinationPiece());
-
+                    gameMenu.setWhiteCount();
+                    gameMenu.setBlackCount();
                     //remove moves that are no longer possible
                     //feed in the move m. if getMoves is fed null, will create it's own move.
 
@@ -299,7 +304,18 @@ public class GameManager {
         }
     }
 
+    private static void changeTurn() {
+        player1turn = !player1turn;
+        gameMenu.changeTurn(player1turn);
+    }
+
     public static Board getBoard() {
         return board;
+    }
+    public static boolean getTurn() {
+        return player1turn;
+    }
+    public static void setPlayer1turn(boolean player1turn) {
+        GameManager.player1turn = player1turn;
     }
 }

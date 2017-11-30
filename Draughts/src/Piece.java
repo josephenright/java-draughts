@@ -5,10 +5,10 @@ import java.util.ArrayList;
 
 public class Piece extends JButton implements Serializable {
 
-    static ImageIcon whiteIcon;
-    static ImageIcon blackIcon;
-    static int whitePieces = 0;
-    static int blackPieces = 0;
+    private static ImageIcon whiteIcon;
+    private static ImageIcon blackIcon;
+    private static int whitePieces = 0;
+    private static int blackPieces = 0;
 
     enum Status {NONE, WHITE, BLACK};
 
@@ -38,7 +38,10 @@ public class Piece extends JButton implements Serializable {
         else
             setBackground(Color.BLACK);
         setWhite(white);
-        updatePieceCount(white, true);
+        if (status == Status.BLACK)
+            updatePieceCount(false, true);
+        else if (status == Status.WHITE)
+            updatePieceCount(true, true);
         setPosition(x, y);
 
         setStatus(status);
@@ -110,7 +113,7 @@ public class Piece extends JButton implements Serializable {
         blackIcon = new ImageIcon("images/red.png");
     }
 
-    private void updatePieceCount(boolean white, boolean add) {
+    private static void updatePieceCount(boolean white, boolean add) {
         int change = (add)? 1 : -1;
         if (white)
             whitePieces += change;
@@ -159,9 +162,11 @@ public class Piece extends JButton implements Serializable {
         movePiece(piece, destination);
         //destination.setBackground(Color.BLACK);
         for (Piece p : jumpedPieces) {
+            boolean pieceIsWhite = (p.getStatus() == Status.WHITE)? true : false;
             p.setStatus(Status.NONE);
             p.setIcon(null);
             p.setEnabled(false);
+            updatePieceCount(pieceIsWhite, false);
         }
     }
 
@@ -176,5 +181,25 @@ public class Piece extends JButton implements Serializable {
         piece.setKing(original.isKing());
         return piece;
     }
+
+    public static int getWhitePieces() {
+        return whitePieces;
+    }
+    public static int getBlackPieces() {
+        return blackPieces;
+    }
+
+    public static void setWhitePieces(int whitePieces) {
+        Piece.whitePieces = whitePieces;
+    }
+    public static void setBlackPieces(int blackPieces) {
+        Piece.blackPieces = blackPieces;
+    }
+
+    public static void resetPieceCount() {
+        whitePieces = 0;
+        blackPieces = 0;
+    }
+
     /***    End of static methods   ***/
 }

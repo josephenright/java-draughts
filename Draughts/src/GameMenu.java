@@ -8,9 +8,12 @@ import java.time.LocalDateTime;
 
 public class GameMenu {
 
-    private static Board board;
+    private Board board;
+    private JMenuItem blackCount;
+    private JMenuItem whiteCount;
+    private JMenuItem turnTracker;
 
-    public static JMenuBar createMenu() {
+    public JMenuBar createMenu() {
         JMenuBar bar = new JMenuBar();
 
         JMenu jMenu = new JMenu("Game");
@@ -36,10 +39,21 @@ public class GameMenu {
         jMenu.add(item);
         item.addActionListener(menuListener);
 
+        whiteCount = new JMenuItem("White left: " + Piece.getWhitePieces());
+        bar.add(whiteCount);
+        whiteCount.setEnabled(false);
+        blackCount = new JMenuItem("Black left: " + Piece.getBlackPieces());
+        bar.add(blackCount);
+        blackCount.setEnabled(false);
+        turnTracker = new JMenuItem("Black's turn");
+        bar.add(turnTracker);
+
+
+
         return bar;
     }
 
-    public static class MenuListener implements ActionListener {
+    public class MenuListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -77,21 +91,26 @@ public class GameMenu {
         }
     }
 
-    public static void saveToFile() throws IOException {
+    public void saveToFile() throws IOException {
         ObjectOutputStream os;
         //LocalDateTime dateTime = LocalDateTime.now(); //https://stackoverflow.com/questions/5175728/how-to-get-the-current-date-time-in-java
         os = new ObjectOutputStream(new FileOutputStream("saves/draughts.save"));
         os.writeObject(GameManager.getBoard());
+        os.writeObject(new SaveDetails(GameManager.getTurn(), Piece.getWhitePieces(), Piece.getWhitePieces()));
         os.close();
     }
 
-    private static void openFromFile() {
+    private void openFromFile() {
         try {
             ObjectInputStream is;
             is = new ObjectInputStream(new FileInputStream("saves/draughts.save"));
             board = (Board)is.readObject();
+            SaveDetails details = (SaveDetails)is.readObject();
             is.close();
             //GameManager.main();
+            GameManager.setPlayer1turn(details.isPlayer1Turn());
+            Piece.setBlackPieces(details.getBlackCount());
+            Piece.setWhitePieces(details.getWhiteCount());
         }
         catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error encountered while loading file",
@@ -100,5 +119,21 @@ public class GameMenu {
         }
 
     }
+
+    public void changeTurn(boolean player1Turn) {
+        String s = (player1Turn)? "Black's turn" : "White's turn";
+        turnTracker.setText(s);
+    }
+    public boolean getTurn() {
+        return (turnTracker.getText().equals("Black's turn"));
+    }
+
+    public void setWhiteCount() {
+        whiteCount.setText("White left: " + Piece.getWhitePieces());
+    }
+    public void setBlackCount() {
+        blackCount.setText("Black left: " + Piece.getBlackPieces());
+    }
+
 
 }
